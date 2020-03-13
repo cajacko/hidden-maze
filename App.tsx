@@ -33,6 +33,8 @@ const Avatar = styled(Animated.View)`
   position: absolute;
   top: ${-avatarSize / 2}px;
   left: ${-avatarSize / 2}px;
+  opacity: 0.1;
+  border-radius: ${avatarSize}px;
 `;
 
 const AvatarCenter = styled.View`
@@ -46,11 +48,17 @@ const AvatarBounds = styled.View`
   height: ${avatarBoundsSize}px;
   position: relative;
   background-color: black;
-  opacity: 0.2;
+  opacity: 0.1;
+  border-radius: ${avatarBoundsSize}px;
 `;
 
 const SafeAreaView = styled.SafeAreaView`
   flex: 1;
+`;
+
+const Image = styled(Animated.Image)`
+  height: 40px;
+  width: 75px;
 `;
 
 const Container = styled.View`
@@ -123,6 +131,7 @@ class App extends Component<Props> {
   private panResponder: PanResponderInstance;
   private controller: Animated.ValueXY;
   private map: Animated.ValueXY;
+  private rotation: Animated.Value;
   private default: {x: number; y: number};
   private reset: null | Animated.CompositeAnimation;
   private mapMotion: null | Animated.CompositeAnimation;
@@ -139,6 +148,7 @@ class App extends Component<Props> {
 
     this.controller = new Animated.ValueXY(this.default);
     this.map = new Animated.ValueXY(this.mapPosition);
+    this.rotation = new Animated.Value(0);
 
     const transformGesture = (
       event: GestureResponderEvent,
@@ -198,6 +208,15 @@ class App extends Component<Props> {
       this.controllerPosition = {x, y};
 
       if (!this.mapMotion) loop();
+
+      const roundedX = Math.round(x);
+      const roundedY = Math.round(y);
+
+      if (roundedX === 0 && roundedY === 0) return;
+
+      let angle = (Math.atan2(y, x) * 180) / Math.PI;
+
+      this.rotation.setValue(angle + 90);
     });
 
     this.panResponder = PanResponder.create({
@@ -233,17 +252,28 @@ class App extends Component<Props> {
       transform: this.map.getTranslateTransform(),
     };
 
+    const spin = this.rotation.interpolate({
+      inputRange: [0, 360],
+      outputRange: ['0deg', '360deg'],
+    });
+
     return (
       <>
         <StatusBar barStyle="dark-content" />
         <SafeAreaView>
-          <Container {...this.panResponder.panHandlers} style={{zIndex: 3}}>
+          <Container {...this.panResponder.panHandlers} style={{zIndex: 4}}>
             <AvatarCenter>
               <Avatar style={[avatarStyle]} />
             </AvatarCenter>
           </Container>
-          <Container style={{zIndex: 2}}>
+          <Container style={{zIndex: 3}}>
             <AvatarBounds />
+          </Container>
+          <Container style={{zIndex: 2}}>
+            <Image
+              source={require('./avatar.png')}
+              style={{transform: [{rotate: spin}]}}
+            />
           </Container>
           <Container style={{zIndex: 1}}>
             <Map style={[mapStyle]}>
