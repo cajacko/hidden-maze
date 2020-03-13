@@ -174,12 +174,22 @@ class App extends Component<Props> {
         return;
       }
 
+      let x = this.mapPosition.x - this.controllerPosition.x * speed;
+      let y = this.mapPosition.y - this.controllerPosition.y * speed;
+
+      if (x > tileSize / 2) x = tileSize / 2;
+      if (x < -tileSize / 2) x = -tileSize / 2;
+      if (y > tileSize / 2) y = tileSize / 2;
+      if (y < -tileSize / 2) y = -tileSize / 2;
+
+      console.log(x, y);
+
       const mapMotion = Animated.timing(this.map, {
         duration,
         easing: Easing.linear,
         toValue: {
-          x: this.mapPosition.x - this.controllerPosition.x * speed,
-          y: this.mapPosition.y - this.controllerPosition.y * speed,
+          x,
+          y,
         },
       });
 
