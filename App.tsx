@@ -11,20 +11,9 @@ import {
 import styled from 'styled-components/native';
 
 const avatarSize = 30;
-const avatarBoundsSize = 120;
+const avatarBoundsSize = 150;
 
 const avatarCenterOffset = avatarBoundsSize / 2 - avatarSize / 2;
-
-const bounds = {
-  x: {
-    min: -avatarCenterOffset,
-    max: avatarCenterOffset,
-  },
-  y: {
-    min: -avatarCenterOffset,
-    max: avatarCenterOffset,
-  },
-};
 
 const Avatar = styled(Animated.View)`
   height: ${avatarSize}px;
@@ -157,16 +146,13 @@ class App extends Component<Props> {
       let x = gestureEvent.dx;
       let y = gestureEvent.dy;
 
-      if (x > bounds.x.max) {
-        x = bounds.x.max;
-      } else if (x < bounds.x.min) {
-        x = bounds.x.min;
-      }
+      const distance = Math.sqrt(x * x + y * y);
+      const radius = avatarCenterOffset;
 
-      if (y > bounds.y.max) {
-        y = bounds.y.max;
-      } else if (y < bounds.y.min) {
-        y = bounds.y.min;
+      if (distance > radius) {
+        const angle = Math.atan2(y, x);
+        x = Math.cos(angle) * radius;
+        y = Math.sin(angle) * radius;
       }
 
       return {x, y};
@@ -214,7 +200,7 @@ class App extends Component<Props> {
 
       if (roundedX === 0 && roundedY === 0) return;
 
-      let angle = (Math.atan2(y, x) * 180) / Math.PI;
+      const angle = (Math.atan2(y, x) * 180) / Math.PI;
 
       this.rotation.setValue(angle + 90);
     });
