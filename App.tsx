@@ -169,53 +169,35 @@ class App extends Component<Props> {
       this.mapPosition = mapPosition;
     });
 
-    let id = 0;
+    const duration = 200;
+    const speed = 0.8;
 
-    const moveMap = (velocityX: number, velocityY: number) => {
-      id += 1;
-      const moveId = id;
-
-      if (this.mapMotion) {
-        this.mapMotion.stop();
-        this.mapMotion = null;
-      }
-
-      const loop = () => {
-        if (moveId !== id) return;
-
-        const mapMotion = Animated.timing(this.map, {
-          duration: 500,
-          easing: Easing.linear,
-          toValue: {
-            x: this.mapPosition.x - velocityX,
-            y: this.mapPosition.y - velocityY,
-          },
-        });
-
-        this.mapMotion = mapMotion;
-
-        this.mapMotion.start(loop);
-      };
-
-      loop();
-    };
-
-    // moveMap(45, 45);
-
-    const throttle = 100;
-
-    setInterval(() => {
+    const loop = () => {
       if (this.controllerPosition.x === 0 && this.controllerPosition.y === 0) {
-        if (this.mapMotion) this.mapMotion.stop();
         this.mapMotion = null;
         return;
       }
 
-      moveMap(this.controllerPosition.x, this.controllerPosition.y);
-    }, throttle);
+      const mapMotion = Animated.timing(this.map, {
+        duration,
+        easing: Easing.linear,
+        toValue: {
+          x: this.mapPosition.x - this.controllerPosition.x * speed,
+          y: this.mapPosition.y - this.controllerPosition.y * speed,
+        },
+      });
+
+      this.mapMotion = mapMotion;
+
+      this.mapMotion.start(loop);
+    };
+
+    loop();
 
     this.controller.addListener(({x, y}) => {
       this.controllerPosition = {x, y};
+
+      if (!this.mapMotion) loop();
     });
 
     this.panResponder = PanResponder.create({
